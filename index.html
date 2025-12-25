@@ -1,0 +1,585 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aina | Your AI Bestie</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=DotGothic16&family=Zen+Maru+Gothic:wght@500;700;900&display=swap"
+        rel="stylesheet">
+    <style>
+        :root {
+            --mint: #b2f4e6;
+            --pink: #ffc4d6;
+            --text: #2d3436;
+        }
+
+        body {
+            margin: 0;
+            overflow-x: hidden;
+            font-family: 'Zen Maru Gothic', sans-serif;
+            background-color: #f0fdfa;
+            /* Fallback */
+            color: var(--text);
+        }
+
+        #canvas-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100vh;
+            z-index: -1;
+            pointer-events: all;
+            /* Allow orbit controls if added, or mouse interaction */
+        }
+
+        /* Typography & Layout Utility */
+        .font-pixel {
+            font-family: 'DotGothic16', sans-serif;
+        }
+
+        .text-outline {
+            -webkit-text-stroke: 2px #fff;
+            paint-order: stroke fill;
+        }
+
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.25);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.4);
+            border-radius: 24px;
+            box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.1);
+        }
+
+        /* Loading Screen */
+        #loader {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: #fff;
+            z-index: 9999;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            transition: opacity 0.8s ease;
+        }
+
+        .loader-bar {
+            width: 200px;
+            height: 6px;
+            background: #eee;
+            border-radius: 99px;
+            margin-top: 20px;
+            overflow: hidden;
+        }
+
+        .loader-progress {
+            width: 0%;
+            height: 100%;
+            background: #2dd4bf;
+            transition: width 0.3s ease;
+        }
+
+        /* Scroller Text */
+        .marquee-container {
+            overflow: hidden;
+            white-space: nowrap;
+            position: absolute;
+            width: 100%;
+            pointer-events: none;
+        }
+
+        .marquee-content {
+            display: inline-block;
+            animation: scroll 20s linear infinite;
+        }
+
+        @keyframes scroll {
+            0% {
+                transform: translateX(0);
+            }
+
+            100% {
+                transform: translateX(-50%);
+            }
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #2dd4bf;
+            border-radius: 10px;
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- Loading Screen -->
+    <div id="loader">
+        <h1 class="text-4xl font-black tracking-tighter text-teal-400">AINA Loading...</h1>
+        <div class="loader-bar">
+            <div class="loader-progress" id="progress"></div>
+        </div>
+    </div>
+
+    <!-- 3D Canvas -->
+    <div id="canvas-container"></div>
+
+    <!-- DOM Overlay Content -->
+    <main class="relative z-10 w-full min-h-[400vh]">
+
+        <!-- Hero Section -->
+        <section
+            class="h-screen w-full flex flex-col justify-center items-start px-6 md:px-20 relative pointer-events-none">
+            <div
+                class="absolute top-10 left-0 w-full marquee-container opacity-30 font-pixel text-8xl text-teal-200 select-none z-[-1]">
+                <div class="marquee-content">
+                    AI HIGH SCHOOL GIRL AINA // ALWAYS BY YOUR SIDE // CHAT WITH ME // AI HIGH SCHOOL GIRL AINA //
+                    ALWAYS BY YOUR SIDE //
+                </div>
+            </div>
+
+            <div class="pointer-events-auto mix-blend-hard-light">
+                <div
+                    class="inline-block bg-white/80 backdrop-blur-sm px-4 py-1 rounded-full mb-4 border border-teal-200 animate-pulse">
+                    <span class="text-teal-500 font-bold text-sm">✨ NEW: グルチャも対応したよ！</span>
+                </div>
+                <h1 class="text-7xl md:text-9xl font-black leading-[0.9] text-gray-800 tracking-tighter mb-4">
+                    AI女子高生<br>
+                    <span class="text-transparent bg-clip-text bg-gradient-to-r from-teal-400 to-pink-400">Aina</span>
+                </h1>
+                <p class="text-xl md:text-2xl font-bold text-gray-500 max-w-lg mb-8">
+                    スマホの中に、いつもの親友。<br>
+                    誰よりも共感してくれる、<br>
+                    あなたのためのAIパートナー。
+                </p>
+                <button
+                    class="group relative px-8 py-4 bg-gray-900 text-white rounded-full font-bold text-lg overflow-hidden transition-transform hover:scale-105 active:scale-95 shadow-xl hover:shadow-teal-300/50">
+                    <span class="relative z-10 flex items-center gap-2">
+                        今すぐ話しかける
+                        <svg class="w-5 h-5 group-hover:translate-x-1 transition-transform" fill="none"
+                            stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M14 5l7 7m0 0l-7 7m7-7H3"></path>
+                        </svg>
+                    </span>
+                    <div
+                        class="absolute inset-0 bg-gradient-to-r from-teal-400 to-pink-500 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                    </div>
+                </button>
+            </div>
+        </section>
+
+        <!-- Features Section (Triggers 3D camera move) -->
+        <section id="features" class="min-h-screen w-full flex flex-col items-end justify-center px-6 md:px-20">
+            <div class="max-w-xl w-full">
+                <div class="flex items-center gap-4 mb-6">
+                    <div class="w-12 h-12 rounded-full bg-pink-100 flex items-center justify-center text-2xl">💖</div>
+                    <h2 class="text-4xl font-black text-gray-800">Concept</h2>
+                </div>
+                <p class="text-lg leading-relaxed font-bold text-gray-600 mb-6">
+                    明るく親しみやすい「AI女子高生」として、<br>
+                    上から目線じゃなく、同じ目線で。<br>
+                    <br>
+                    <span class="bg-teal-100 px-1">「わかる〜！」</span>って共感してほしい時も、<br>
+                    <span class="bg-pink-100 px-1">「それな！」</span>って笑い合いたい時も。<br>
+                    Ainaはいつでも、あなたのポケットに。
+                </p>
+
+                <div class="grid grid-cols-2 gap-4">
+                    <div class="bg-white/60 p-4 rounded-xl border border-white">
+                        <h3 class="font-black text-teal-500 mb-1">＃相談相手</h3>
+                        <p class="text-xs text-gray-500 font-bold">恋バナも進路も<br>なんでも聞くよ</p>
+                    </div>
+                    <div class="bg-white/60 p-4 rounded-xl border border-white">
+                        <h3 class="font-black text-pink-400 mb-1">＃調整役</h3>
+                        <p class="text-xs text-gray-500 font-bold">予定決めや<br>会話の要約も！</p>
+                    </div>
+                </div>
+
+                <div class="mt-8">
+                    <img src="public/chat.png" alt="Aina Chat Interface"
+                        class="rounded-xl shadow-2xl w-full border-2 border-white/50">
+                </div>
+            </div>
+        </section>
+
+        <!-- Visual/Tech Section -->
+        <section class="h-screen w-full flex items-center justify-center relative">
+            <div class="text-center pointer-events-none z-10">
+                <h2
+                    class="text-[12vw] md:text-[15vw] font-black text-white mix-blend-overlay leading-none select-none opacity-50">
+                    DIGITAL<br>BESTIE
+                </h2>
+            </div>
+        </section>
+
+        <!-- Footer -->
+        <footer
+            class="h-[50vh] w-full bg-white/10 backdrop-blur-lg border-t border-white/20 flex flex-col justify-center items-center relative overflow-hidden">
+            <div class="absolute inset-0 bg-gradient-to-t from-teal-50/80 to-transparent z-[-1]"></div>
+
+            <h2 class="text-4xl md:text-6xl font-black text-gray-800 mb-8 text-center">
+                Ainaと友達になろう
+            </h2>
+            <div class="flex gap-4">
+                <button
+                    class="px-8 py-3 bg-white text-gray-900 rounded-full font-bold shadow-lg hover:scale-105 transition-transform">
+                    Lineで追加
+                </button>
+                <button
+                    class="px-8 py-3 bg-gray-900 text-white rounded-full font-bold shadow-lg hover:scale-105 transition-transform">
+                    アプリを開く
+                </button>
+            </div>
+            <p class="mt-12 text-gray-400 font-pixel text-sm">© 2024 AI High School Girl Aina. All rights reserved.</p>
+        </footer>
+
+    </main>
+
+    <script>
+        // --- THREE.JS SETUP ---
+        const container = document.getElementById('canvas-container');
+        const scene = new THREE.Scene();
+
+        // Camera Setup
+        const camera = new THREE.PerspectiveCamera(35, window.innerWidth / window.innerHeight, 0.1, 100);
+        camera.position.z = 6;
+
+        // Renderer
+        const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+        container.appendChild(renderer.domElement);
+
+        // State & Mouse
+        const mouse = new THREE.Vector2();
+        const targetMouse = new THREE.Vector2();
+        const windowHalf = new THREE.Vector2(window.innerWidth / 2, window.innerHeight / 2);
+
+        // --- ASSETS & TEXTURE LOADING ---
+        const loader = new THREE.TextureLoader();
+        const loadingManager = new THREE.LoadingManager();
+
+        loadingManager.onProgress = (url, loaded, total) => {
+            const progress = (loaded / total) * 100;
+            document.getElementById('progress').style.width = progress + '%';
+        };
+
+        loadingManager.onLoad = () => {
+            gsap.to('#loader', {
+                opacity: 0, duration: 0.8, onComplete: () => {
+                    document.getElementById('loader').style.display = 'none';
+                }
+            });
+        };
+
+        const textureLoader = new THREE.TextureLoader(loadingManager);
+
+        // ** IMPORTANT: Replace with actual image path if hosted differently **
+        // Using the user provided filename
+        const ainaTexture = textureLoader.load('public/Aina.png', (tex) => {
+            // Adjust card aspect ratio to match image
+            const imageAspect = tex.image.width / tex.image.height;
+            const baseHeight = 3.5;
+            card.scale.set(baseHeight * imageAspect, baseHeight, 1);
+        });
+
+        // --- SHADERS ---
+
+        // 1. Background Gradient Shader (Mint to Pink Lava Lamp)
+        const bgGeometry = new THREE.PlaneGeometry(20, 20);
+        const bgMaterial = new THREE.ShaderMaterial({
+            uniforms: {
+                uTime: { value: 0 },
+                uColor1: { value: new THREE.Color('#b2f4e6') }, // Mint
+                uColor2: { value: new THREE.Color('#ffc4d6') }, // Pink
+                uColor3: { value: new THREE.Color('#ffffff') }, // White
+            },
+            vertexShader: `
+                varying vec2 vUv;
+                void main() {
+                    vUv = uv;
+                    gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+                }
+            `,
+            fragmentShader: `
+                uniform float uTime;
+                uniform vec3 uColor1;
+                uniform vec3 uColor2;
+                uniform vec3 uColor3;
+                varying vec2 vUv;
+
+                // Simplex noise function (simplified)
+                vec3 mod289(vec3 x) { return x - floor(x * (1.0 / 289.0)) * 289.0; }
+                vec2 mod289(vec2 x) { return x - floor(x * (1.0 / 289.0)) * 289.0; }
+                vec3 permute(vec3 x) { return mod289(((x*34.0)+1.0)*x); }
+                float snoise(vec2 v) {
+                    const vec4 C = vec4(0.211324865405187, 0.366025403784439, -0.577350269189626, 0.024390243902439);
+                    vec2 i  = floor(v + dot(v, C.yy) );
+                    vec2 x0 = v - i + dot(i, C.xx);
+                    vec2 i1;
+                    i1 = (x0.x > x0.y) ? vec2(1.0, 0.0) : vec2(0.0, 1.0);
+                    vec4 x12 = x0.xyxy + C.xxzz;
+                    x12.xy -= i1;
+                    i = mod289(i);
+                    vec3 p = permute( permute( i.y + vec3(0.0, i1.y, 1.0 )) + i.x + vec3(0.0, i1.x, 1.0 ));
+                    vec3 m = max(0.5 - vec3(dot(x0,x0), dot(x12.xy,x12.xy), dot(x12.zw,x12.zw)), 0.0);
+                    m = m*m ;
+                    m = m*m ;
+                    vec3 x = 2.0 * fract(p * C.www) - 1.0;
+                    vec3 h = abs(x) - 0.5;
+                    vec3 ox = floor(x + 0.5);
+                    vec3 a0 = x - ox;
+                    m *= 1.79284291400159 - 0.85373472095314 * ( a0*a0 + h*h );
+                    vec3 g;
+                    g.x  = a0.x  * x0.x  + h.x  * x0.y;
+                    g.yz = a0.yz * x12.xz + h.yz * x12.yw;
+                    return 130.0 * dot(m, g);
+                }
+
+                void main() {
+                    float noise = snoise(vUv * 2.0 + uTime * 0.1);
+                    float noise2 = snoise(vUv * 4.0 - uTime * 0.15);
+                    
+                    vec3 color = mix(uColor1, uColor2, (noise + 1.0) * 0.5);
+                    color = mix(color, uColor3, (noise2 + 0.5) * 0.3); // Add white highlights
+                    
+                    // Add subtle gradient to ensure text readability usually
+                    float vignette = distance(vUv, vec2(0.5));
+                    color = mix(color, vec3(1.0), vignette * 0.3);
+
+                    gl_FragColor = vec4(color, 1.0);
+                }
+            `
+        });
+        const bgMesh = new THREE.Mesh(bgGeometry, bgMaterial);
+        bgMesh.position.z = -5;
+        scene.add(bgMesh);
+
+
+        // 2. The Main Character Card (Aina)
+        // We create a "Holographic" feel using a custom shader
+        const cardGeometry = new THREE.PlaneGeometry(1, 1, 32, 32); // Use 1x1 base, scale later
+        const cardMaterial = new THREE.ShaderMaterial({
+            uniforms: {
+                uTexture: { value: ainaTexture },
+                uHover: { value: new THREE.Vector2(0.5, 0.5) },
+                uTime: { value: 0 },
+                uMouse: { value: new THREE.Vector2(0, 0) }
+            },
+            transparent: true,
+            vertexShader: `
+                varying vec2 vUv;
+                varying vec3 vPos;
+                uniform float uTime;
+                uniform vec2 uMouse;
+
+                void main() {
+                    vUv = uv;
+                    vPos = position;
+                    
+                    // Subtle breathing effect
+                    vec3 pos = position;
+                    pos.z += sin(pos.y * 2.0 + uTime) * 0.05;
+                    
+                    // Mouse interaction bend
+                    float dist = distance(uv, uMouse);
+                    pos.z += (1.0 - dist) * 0.1;
+
+                    gl_Position = projectionMatrix * modelViewMatrix * vec4(pos, 1.0);
+                }
+            `,
+            fragmentShader: `
+                uniform sampler2D uTexture;
+                uniform float uTime;
+                varying vec2 vUv;
+                varying vec3 vPos;
+
+                void main() {
+                    // Aberration effect (RGB Split) based on position
+                    float shift = 0.01 * sin(uTime * 2.0);
+                    
+                    vec4 r = texture2D(uTexture, vUv + vec2(shift, 0.0));
+                    vec4 g = texture2D(uTexture, vUv);
+                    vec4 b = texture2D(uTexture, vUv - vec2(shift, 0.0));
+                    
+                    vec4 color = vec4(r.r, g.g, b.b, g.a);
+                    
+                    // Scanline effect
+                    float scanline = sin(vUv.y * 800.0) * 0.04;
+                    color.rgb -= scanline;
+                    
+                    // Soft edges
+                    // float alpha = smoothstep(0.0, 0.1, vUv.x) * smoothstep(1.0, 0.9, vUv.x) * //               smoothstep(0.0, 0.1, vUv.y) * smoothstep(1.0, 0.9, vUv.y);
+                    
+                    gl_FragColor = color;
+                }
+            `
+        });
+        const card = new THREE.Mesh(cardGeometry, cardMaterial);
+        card.position.x = 1.5; // Start on the right side
+        scene.add(card);
+
+        // 3. Floating 3D Elements (Stars & Hearts)
+        const shapesGroup = new THREE.Group();
+        scene.add(shapesGroup);
+
+        const starShape = new THREE.Shape();
+        // Draw a generic 5-point star
+        const points = 5;
+        const outerRadius = 0.3;
+        const innerRadius = 0.15;
+
+        for (let i = 0; i < points * 2; i++) {
+            const radius = i % 2 === 0 ? outerRadius : innerRadius;
+            const angle = (i / (points * 2)) * Math.PI * 2;
+            // Rotate by -PI/2 to have the point upwards
+            const a = angle - Math.PI / 2;
+
+            const x = Math.cos(a) * radius;
+            const y = Math.sin(a) * radius;
+
+            if (i === 0) starShape.moveTo(x, y);
+            else starShape.lineTo(x, y);
+        }
+        starShape.closePath();
+
+        const shapeGeo = new THREE.ExtrudeGeometry(starShape, { depth: 0.1, bevelEnabled: true, bevelSize: 0.02, bevelThickness: 0.02 });
+        const shapeMat = new THREE.MeshNormalMaterial({ wireframe: false }); // Normal material looks cool and techy
+
+        const particles = [];
+        for (let i = 0; i < 15; i++) {
+            const mesh = new THREE.Mesh(shapeGeo, shapeMat);
+
+            // Random positions
+            mesh.position.set(
+                (Math.random() - 0.5) * 10,
+                (Math.random() - 0.5) * 10,
+                (Math.random() - 0.5) * 5
+            );
+
+            // Random rotation
+            mesh.rotation.x = Math.random() * Math.PI;
+            mesh.rotation.y = Math.random() * Math.PI;
+
+            // Store initial random movement data
+            mesh.userData = {
+                speed: Math.random() * 0.01 + 0.005,
+                rotSpeed: Math.random() * 0.02
+            };
+
+            shapesGroup.add(mesh);
+            particles.push(mesh);
+        }
+
+
+        // --- EVENT LISTENERS ---
+
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            windowHalf.set(window.innerWidth / 2, window.innerHeight / 2);
+        });
+
+        document.addEventListener('mousemove', (e) => {
+            // Normalize mouse position -1 to 1
+            targetMouse.x = (e.clientX - windowHalf.x) / windowHalf.x;
+            targetMouse.y = (e.clientY - windowHalf.y) / windowHalf.y;
+
+            // Send to shader (0 to 1 range)
+            cardMaterial.uniforms.uMouse.value.set(e.clientX / window.innerWidth, 1.0 - e.clientY / window.innerHeight);
+        });
+
+        // --- GSAP ANIMATION & SCROLL ---
+
+        gsap.registerPlugin(ScrollTrigger);
+
+        // Animation Timeline for the Card
+        // 1. Initial Position (Hero) -> Right side
+        // 2. Second Section (Concept) -> Move Left, Rotate
+        // 3. Third Section -> Center, Scale Up
+
+        const tl = gsap.timeline({
+            scrollTrigger: {
+                trigger: "body",
+                start: "top top",
+                end: "bottom bottom",
+                scrub: 1.5
+            }
+        });
+
+        // Intro: Card floats in
+        gsap.from(card.position, { y: -5, duration: 1.5, ease: "elastic.out(1, 0.5)" });
+
+        // Scroll Steps
+        tl.to(card.position, { x: -2, z: 1, duration: 2 }, 0) // Move Left
+            .to(card.rotation, { y: 0.5, duration: 2 }, 0)      // Rotate
+            .to(card.position, { x: 0, y: 0, z: 2.5, duration: 2 }) // Center Close Up
+            .to(card.rotation, { y: 0, z: 0.2, duration: 2 }, "<"); // Tilt
+
+        // Background color shift via shader uniforms? 
+        // We can just animate the color values simply using GSAP on the uniforms object
+        tl.to(bgMaterial.uniforms.uColor1.value, { r: 1.0, g: 0.9, b: 0.9, duration: 3 }, 0); // Shift to pinker
+
+
+        // --- ANIMATION LOOP ---
+        const clock = new THREE.Clock();
+
+        function animate() {
+            requestAnimationFrame(animate);
+
+            const time = clock.getElapsedTime();
+
+            // Update Shader Time
+            bgMaterial.uniforms.uTime.value = time;
+            cardMaterial.uniforms.uTime.value = time;
+
+            // Smooth Mouse Follow for Camera (Parallax)
+            mouse.x += (targetMouse.x - mouse.x) * 0.05;
+            mouse.y += (targetMouse.y - mouse.y) * 0.05;
+
+            camera.position.x += (mouse.x * 0.5 - camera.position.x) * 0.05;
+            camera.position.y += (-mouse.y * 0.5 - camera.position.y) * 0.05;
+            camera.lookAt(0, 0, 0);
+
+            // Floating Particles Animation
+            particles.forEach((mesh, i) => {
+                mesh.position.y += Math.sin(time + i) * 0.002;
+                mesh.rotation.x += mesh.userData.rotSpeed;
+                mesh.rotation.y += mesh.userData.rotSpeed;
+            });
+
+            // Card Idle Animation (if not scrolling heavily)
+            card.rotation.z = Math.sin(time * 0.5) * 0.05;
+
+            renderer.render(scene, camera);
+        }
+
+        animate();
+
+    </script>
+</body>
+
+</html>
