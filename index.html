@@ -207,11 +207,11 @@
                 </p>
 
                 <div class="grid grid-cols-2 gap-4">
-                    <div class="bg-white/60 p-4 rounded-xl border border-white">
+                    <div class="bg-white p-4 rounded-xl border border-gray-100">
                         <h3 class="font-black text-teal-500 mb-1">＃相談相手</h3>
                         <p class="text-xs text-gray-500 font-bold">恋バナも進路も<br>なんでも聞くよ</p>
                     </div>
-                    <div class="bg-white/60 p-4 rounded-xl border border-white">
+                    <div class="bg-white p-4 rounded-xl border border-gray-100">
                         <h3 class="font-black text-pink-400 mb-1">＃調整役</h3>
                         <p class="text-xs text-gray-500 font-bold">予定決めや<br>会話の要約も！</p>
                     </div>
@@ -379,63 +379,12 @@
 
 
         // 2. The Main Character Card (Aina)
-        // We create a "Holographic" feel using a custom shader
-        const cardGeometry = new THREE.PlaneGeometry(1, 1, 32, 32); // Use 1x1 base, scale later
-        const cardMaterial = new THREE.ShaderMaterial({
-            uniforms: {
-                uTexture: { value: ainaTexture },
-                uHover: { value: new THREE.Vector2(0.5, 0.5) },
-                uTime: { value: 0 },
-                uMouse: { value: new THREE.Vector2(0, 0) }
-            },
+        // Standard material for clean, non-distorted display
+        const cardGeometry = new THREE.PlaneGeometry(1, 1);
+        const cardMaterial = new THREE.MeshBasicMaterial({
+            map: ainaTexture,
             transparent: true,
-            vertexShader: `
-                varying vec2 vUv;
-                varying vec3 vPos;
-                uniform float uTime;
-                uniform vec2 uMouse;
-
-                void main() {
-                    vUv = uv;
-                    vPos = position;
-                    
-                    // Subtle breathing effect
-                    vec3 pos = position;
-                    pos.z += sin(pos.y * 2.0 + uTime) * 0.05;
-                    
-                    // Mouse interaction bend
-                    float dist = distance(uv, uMouse);
-                    pos.z += (1.0 - dist) * 0.1;
-
-                    gl_Position = projectionMatrix * modelViewMatrix * vec4(pos, 1.0);
-                }
-            `,
-            fragmentShader: `
-                uniform sampler2D uTexture;
-                uniform float uTime;
-                varying vec2 vUv;
-                varying vec3 vPos;
-
-                void main() {
-                    // Aberration effect (RGB Split) based on position
-                    float shift = 0.01 * sin(uTime * 2.0);
-                    
-                    vec4 r = texture2D(uTexture, vUv + vec2(shift, 0.0));
-                    vec4 g = texture2D(uTexture, vUv);
-                    vec4 b = texture2D(uTexture, vUv - vec2(shift, 0.0));
-                    
-                    vec4 color = vec4(r.r, g.g, b.b, g.a);
-                    
-                    // Scanline effect
-                    float scanline = sin(vUv.y * 800.0) * 0.04;
-                    color.rgb -= scanline;
-                    
-                    // Soft edges
-                    // float alpha = smoothstep(0.0, 0.1, vUv.x) * smoothstep(1.0, 0.9, vUv.x) * //               smoothstep(0.0, 0.1, vUv.y) * smoothstep(1.0, 0.9, vUv.y);
-                    
-                    gl_FragColor = color;
-                }
-            `
+            side: THREE.DoubleSide
         });
         const card = new THREE.Mesh(cardGeometry, cardMaterial);
         card.position.x = 1.5; // Start on the right side
@@ -507,9 +456,6 @@
             // Normalize mouse position -1 to 1
             targetMouse.x = (e.clientX - windowHalf.x) / windowHalf.x;
             targetMouse.y = (e.clientY - windowHalf.y) / windowHalf.y;
-
-            // Send to shader (0 to 1 range)
-            cardMaterial.uniforms.uMouse.value.set(e.clientX / window.innerWidth, 1.0 - e.clientY / window.innerHeight);
         });
 
         // --- GSAP ANIMATION & SCROLL ---
@@ -554,7 +500,7 @@
 
             // Update Shader Time
             bgMaterial.uniforms.uTime.value = time;
-            cardMaterial.uniforms.uTime.value = time;
+
 
             // Smooth Mouse Follow for Camera (Parallax)
             mouse.x += (targetMouse.x - mouse.x) * 0.05;
