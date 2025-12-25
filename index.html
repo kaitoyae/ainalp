@@ -144,6 +144,24 @@
     <!-- 3D Canvas -->
     <div id="canvas-container"></div>
 
+    <!-- Header -->
+    <header
+        class="fixed top-0 left-0 w-full z-50 px-6 md:px-20 py-4 bg-white/80 backdrop-blur-md border-b border-white/20">
+        <nav class="flex justify-between items-center">
+            <a href="#" class="text-2xl font-black text-gray-800 tracking-tight">
+                <span class="text-transparent bg-clip-text bg-gradient-to-r from-teal-400 to-pink-400">Aina</span>
+            </a>
+            <div class="flex gap-4 md:gap-8 items-center">
+                <a href="#features"
+                    class="text-gray-600 hover:text-teal-500 font-bold text-sm hidden md:block transition-colors">Concept</a>
+                <a href="#"
+                    class="px-4 py-2 bg-gray-900 text-white rounded-full font-bold text-sm hover:bg-teal-500 transition-colors">
+                    友達になる
+                </a>
+            </div>
+        </nav>
+    </header>
+
     <!-- DOM Overlay Content -->
     <main class="relative z-10 w-full min-h-[400vh]">
 
@@ -240,23 +258,36 @@
 
         <!-- Footer -->
         <footer
-            class="h-[50vh] w-full bg-white/10 backdrop-blur-lg border-t border-white/20 flex flex-col justify-center items-center relative overflow-hidden">
+            class="min-h-[60vh] w-full bg-white/10 backdrop-blur-lg border-t border-white/20 flex flex-col justify-center items-center relative overflow-hidden px-6">
             <div class="absolute inset-0 bg-gradient-to-t from-teal-50/80 to-transparent z-[-1]"></div>
 
-            <h2 class="text-4xl md:text-6xl font-black text-gray-800 mb-8 text-center">
+            <h2 class="text-3xl md:text-6xl font-black text-gray-800 mb-8 text-center">
                 Ainaと友達になろう
             </h2>
-            <div class="flex gap-4">
-                <button
-                    class="px-8 py-3 bg-white text-gray-900 rounded-full font-bold shadow-lg hover:scale-105 transition-transform">
-                    Lineで追加
-                </button>
-                <button
+            <div class="flex flex-col md:flex-row gap-4">
+                <a href="#"
+                    class="px-8 py-3 bg-[#06C755] text-white rounded-full font-bold shadow-lg hover:scale-105 transition-transform flex items-center gap-2">
+                    <svg class="w-5 h-5" viewBox="0 0 24 24" fill="currentColor">
+                        <path
+                            d="M19.365 9.863c.349 0 .63.285.63.631 0 .345-.281.63-.63.63H17.61v1.125h1.755c.349 0 .63.283.63.63 0 .344-.281.629-.63.629h-2.386c-.345 0-.627-.285-.627-.629V8.108c0-.345.282-.63.627-.63h2.386c.349 0 .63.285.63.63 0 .349-.281.63-.63.63H17.61v1.125h1.755zm-3.855 3.016c0 .27-.174.51-.432.596-.064.021-.133.031-.199.031-.211 0-.391-.09-.51-.25l-2.443-3.317v2.94c0 .344-.279.629-.631.629-.346 0-.626-.285-.626-.629V8.108c0-.27.173-.51.43-.595.06-.023.136-.033.194-.033.195 0 .375.104.495.254l2.462 3.33V8.108c0-.345.282-.63.63-.63.345 0 .63.285.63.63v4.771zm-5.741 0c0 .344-.282.629-.631.629-.345 0-.627-.285-.627-.629V8.108c0-.345.282-.63.627-.63.349 0 .631.285.631.63v4.771zm-2.466.629H4.917c-.345 0-.63-.285-.63-.629V8.108c0-.345.285-.63.63-.63.348 0 .63.285.63.63v4.141h1.756c.348 0 .629.283.629.63 0 .344-.281.629-.629.629M24 10.314C24 4.943 18.615.572 12 .572S0 4.943 0 10.314c0 4.811 4.27 8.842 10.035 9.608.391.082.923.258 1.058.59.12.301.079.766.038 1.08l-.164 1.02c-.045.301-.24 1.186 1.049.645 1.291-.539 6.916-4.078 9.436-6.975C23.176 14.393 24 12.458 24 10.314" />
+                    </svg>
+                    LINEで追加
+                </a>
+                <a href="#"
                     class="px-8 py-3 bg-gray-900 text-white rounded-full font-bold shadow-lg hover:scale-105 transition-transform">
                     アプリを開く
-                </button>
+                </a>
             </div>
-            <p class="mt-12 text-gray-400 font-pixel text-sm">© 2024 AI High School Girl Aina. All rights reserved.</p>
+
+            <!-- Footer Links -->
+            <div class="mt-12 flex flex-wrap justify-center gap-6 text-sm text-gray-500">
+                <a href="#" class="hover:text-teal-500 transition-colors">利用規約</a>
+                <a href="#" class="hover:text-teal-500 transition-colors">プライバシーポリシー</a>
+                <a href="#" class="hover:text-teal-500 transition-colors">お問い合わせ</a>
+            </div>
+
+            <p class="mt-6 text-gray-400 font-pixel text-xs md:text-sm">© 2024 AI High School Girl Aina. All rights
+                reserved.</p>
         </footer>
 
     </main>
@@ -397,12 +428,11 @@
         card.position.x = 1.5; // Start on the right side
         scene.add(card);
 
-        // 3. Floating 3D Elements (Stars & Hearts)
+        // 3. Floating 3D Elements (Stars)
         const shapesGroup = new THREE.Group();
         scene.add(shapesGroup);
 
         const starShape = new THREE.Shape();
-        // Draw a generic 5-point star
         const points = 5;
         const outerRadius = 0.3;
         const innerRadius = 0.15;
@@ -410,7 +440,6 @@
         for (let i = 0; i < points * 2; i++) {
             const radius = i % 2 === 0 ? outerRadius : innerRadius;
             const angle = (i / (points * 2)) * Math.PI * 2;
-            // Rotate by -PI/2 to have the point upwards
             const a = angle - Math.PI / 2;
 
             const x = Math.cos(a) * radius;
@@ -421,32 +450,77 @@
         }
         starShape.closePath();
 
-        const shapeGeo = new THREE.ExtrudeGeometry(starShape, { depth: 0.1, bevelEnabled: true, bevelSize: 0.02, bevelThickness: 0.02 });
-        const shapeMat = new THREE.MeshNormalMaterial({ wireframe: false }); // Normal material looks cool and techy
+        // Detect device early for star generation
+        const isMobileForStars = window.innerWidth < 768;
 
         const particles = [];
-        for (let i = 0; i < 15; i++) {
-            const mesh = new THREE.Mesh(shapeGeo, shapeMat);
 
-            // Random positions
-            mesh.position.set(
-                (Math.random() - 0.5) * 10,
-                (Math.random() - 0.5) * 10,
-                (Math.random() - 0.5) * 5
-            );
+        if (isMobileForStars) {
+            // ========== MOBILE STARS ==========
+            // Fewer, smaller, closer to camera
+            const mobileShapeGeo = new THREE.ExtrudeGeometry(starShape, {
+                depth: 0.08,
+                bevelEnabled: true,
+                bevelSize: 0.01,
+                bevelThickness: 0.01
+            });
+            const shapeMat = new THREE.MeshNormalMaterial({ wireframe: false });
 
-            // Random rotation
-            mesh.rotation.x = Math.random() * Math.PI;
-            mesh.rotation.y = Math.random() * Math.PI;
+            for (let i = 0; i < 6; i++) {
+                const mesh = new THREE.Mesh(mobileShapeGeo, shapeMat);
 
-            // Store initial random movement data
-            mesh.userData = {
-                speed: Math.random() * 0.01 + 0.005,
-                rotSpeed: Math.random() * 0.02
-            };
+                // Smaller spread, positioned around edges of screen
+                mesh.position.set(
+                    (Math.random() - 0.5) * 4,
+                    (Math.random() - 0.5) * 6,
+                    (Math.random() - 0.5) * 2 - 1
+                );
 
-            shapesGroup.add(mesh);
-            particles.push(mesh);
+                // Smaller scale for mobile
+                mesh.scale.setScalar(0.6);
+
+                mesh.rotation.x = Math.random() * Math.PI;
+                mesh.rotation.y = Math.random() * Math.PI;
+
+                mesh.userData = {
+                    speed: Math.random() * 0.01 + 0.005,
+                    rotSpeed: Math.random() * 0.015
+                };
+
+                shapesGroup.add(mesh);
+                particles.push(mesh);
+            }
+        } else {
+            // ========== DESKTOP STARS ==========
+            // Original: more stars, larger spread
+            const shapeGeo = new THREE.ExtrudeGeometry(starShape, {
+                depth: 0.1,
+                bevelEnabled: true,
+                bevelSize: 0.02,
+                bevelThickness: 0.02
+            });
+            const shapeMat = new THREE.MeshNormalMaterial({ wireframe: false });
+
+            for (let i = 0; i < 15; i++) {
+                const mesh = new THREE.Mesh(shapeGeo, shapeMat);
+
+                mesh.position.set(
+                    (Math.random() - 0.5) * 10,
+                    (Math.random() - 0.5) * 10,
+                    (Math.random() - 0.5) * 5
+                );
+
+                mesh.rotation.x = Math.random() * Math.PI;
+                mesh.rotation.y = Math.random() * Math.PI;
+
+                mesh.userData = {
+                    speed: Math.random() * 0.01 + 0.005,
+                    rotSpeed: Math.random() * 0.02
+                };
+
+                shapesGroup.add(mesh);
+                particles.push(mesh);
+            }
         }
 
 
@@ -465,11 +539,6 @@
 
             // Make Aina smaller on mobile
             card.scale.multiplyScalar(0.5);
-
-            // Reduce star particles on mobile for performance
-            particles.forEach((mesh, i) => {
-                if (i > 5) mesh.visible = false;
-            });
         }
 
         // ============================================
