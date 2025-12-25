@@ -38,7 +38,6 @@
             height: 100vh;
             z-index: -1;
             pointer-events: all;
-            /* Allow orbit controls if added, or mouse interaction */
         }
 
         /* Typography & Layout Utility */
@@ -150,25 +149,26 @@
 
         <!-- Hero Section -->
         <section
-            class="h-screen w-full flex flex-col justify-center items-start px-6 md:px-20 relative pointer-events-none">
+            class="min-h-screen w-full flex flex-col justify-start md:justify-center items-center md:items-start px-6 md:px-20 pt-16 md:pt-0 relative pointer-events-none text-center md:text-left">
             <div
-                class="absolute top-10 left-0 w-full marquee-container opacity-30 font-pixel text-8xl text-teal-200 select-none z-[-1]">
+                class="absolute top-10 left-0 w-full marquee-container opacity-30 font-pixel text-5xl md:text-8xl text-teal-200 select-none z-[-1]">
                 <div class="marquee-content">
                     AI HIGH SCHOOL GIRL AINA // ALWAYS BY YOUR SIDE // CHAT WITH ME // AI HIGH SCHOOL GIRL AINA //
                     ALWAYS BY YOUR SIDE //
                 </div>
             </div>
 
-            <div class="pointer-events-auto mix-blend-hard-light">
+            <div
+                class="pointer-events-auto mix-blend-hard-light relative z-20 bg-gradient-to-b from-white/80 via-white/60 to-transparent md:bg-none p-4 md:p-0 rounded-2xl md:rounded-none">
                 <div
                     class="inline-block bg-white/80 backdrop-blur-sm px-4 py-1 rounded-full mb-4 border border-teal-200 animate-pulse">
                     <span class="text-teal-500 font-bold text-sm">✨ NEW: グルチャも対応したよ！</span>
                 </div>
-                <h1 class="text-7xl md:text-9xl font-black leading-[0.9] text-gray-800 tracking-tighter mb-4">
+                <h1 class="text-5xl md:text-9xl font-black leading-[0.9] text-gray-800 tracking-tighter mb-4">
                     AI女子高生<br>
                     <span class="text-transparent bg-clip-text bg-gradient-to-r from-teal-400 to-pink-400">Aina</span>
                 </h1>
-                <p class="text-xl md:text-2xl font-bold text-gray-500 max-w-lg mb-8">
+                <p class="text-base md:text-2xl font-bold text-gray-500 max-w-lg mb-8">
                     スマホの中に、いつもの親友。<br>
                     誰よりも共感してくれる、<br>
                     あなたのためのAIパートナー。
@@ -188,10 +188,14 @@
                     </div>
                 </button>
             </div>
+
+            <!-- Spacer for Aina on mobile -->
+            <div class="h-[50vh] md:hidden"></div>
         </section>
 
         <!-- Features Section (Triggers 3D camera move) -->
-        <section id="features" class="min-h-screen w-full flex flex-col items-end justify-center px-6 md:px-20">
+        <section id="features"
+            class="min-h-screen w-full flex flex-col items-center md:items-end justify-center px-6 md:px-20">
             <div class="max-w-xl w-full">
                 <div class="flex items-center gap-4 mb-6">
                     <div class="w-12 h-12 rounded-full bg-pink-100 flex items-center justify-center text-2xl">💖</div>
@@ -303,6 +307,9 @@
             const imageAspect = tex.image.width / tex.image.height;
             const baseHeight = 3.5;
             card.scale.set(baseHeight * imageAspect, baseHeight, 1);
+
+            // Initial Responsive Adjustment
+            updateLayout();
         });
 
         // --- SHADERS ---
@@ -443,6 +450,48 @@
         }
 
 
+        // ============================================
+        // DEVICE DETECTION
+        // ============================================
+        const isMobile = window.innerWidth < 768;
+
+        // ============================================
+        // MOBILE SETUP
+        // ============================================
+        function setupMobile() {
+            // Mobile: Position Aina at center, smaller
+            card.position.set(0, -0.8, 0);
+            camera.position.z = 6;
+
+            // Make Aina smaller on mobile
+            card.scale.multiplyScalar(0.5);
+
+            // Reduce star particles on mobile for performance
+            particles.forEach((mesh, i) => {
+                if (i > 5) mesh.visible = false;
+            });
+        }
+
+        // ============================================
+        // DESKTOP SETUP 
+        // ============================================
+        function setupDesktop() {
+            // Desktop: Position Aina on the right side
+            card.position.set(1.5, 0, 0);
+            camera.position.z = 6;
+        }
+
+        // ============================================
+        // RESPONSIVE LAYOUT (called after texture loads)
+        // ============================================
+        function updateLayout() {
+            if (isMobile) {
+                setupMobile();
+            } else {
+                setupDesktop();
+            }
+        }
+
         // --- EVENT LISTENERS ---
 
         window.addEventListener('resize', () => {
@@ -458,39 +507,66 @@
             targetMouse.y = (e.clientY - windowHalf.y) / windowHalf.y;
         });
 
-        // --- GSAP ANIMATION & SCROLL ---
+        // ============================================
+        // GSAP ANIMATIONS - COMPLETELY SEPARATE
+        // ============================================
 
         gsap.registerPlugin(ScrollTrigger);
 
-        // Animation Timeline for the Card
-        // 1. Initial Position (Hero) -> Right side
-        // 2. Second Section (Concept) -> Move Left, Rotate
-        // 3. Third Section -> Center, Scale Up
+        if (isMobile) {
+            // ========== MOBILE ANIMATIONS ==========
+            // Simple: Fade out when scrolling to features, fade in at footer
 
-        const tl = gsap.timeline({
-            scrollTrigger: {
-                trigger: "body",
-                start: "top top",
-                end: "bottom bottom",
-                scrub: 1.5
-            }
-        });
+            gsap.to(cardMaterial, {
+                scrollTrigger: {
+                    trigger: "#features",
+                    start: "top 100%",
+                    end: "top 60%",
+                    scrub: true,
+                },
+                opacity: 0,
+            });
 
-        // Intro: Card floats in
-        gsap.from(card.position, { y: -5, duration: 1.5, ease: "elastic.out(1, 0.5)" });
+            gsap.to(cardMaterial, {
+                scrollTrigger: {
+                    trigger: "footer",
+                    start: "top 100%",
+                    end: "top 70%",
+                    scrub: true,
+                },
+                opacity: 1,
+            });
 
-        // Scroll Steps
-        tl.to(card.position, { x: -2, z: 1, duration: 2 }, 0) // Move Left
-            .to(card.rotation, { y: 0.5, duration: 2 }, 0)      // Rotate
-            .to(card.position, { x: 0, y: 0, z: 2.5, duration: 2 }) // Center Close Up
-            .to(card.rotation, { y: 0, z: 0.2, duration: 2 }, "<"); // Tilt
+        } else {
+            // ========== DESKTOP ANIMATIONS ==========
+            // Rich scroll-based 3D animation
 
-        // Background color shift via shader uniforms? 
-        // We can just animate the color values simply using GSAP on the uniforms object
-        tl.to(bgMaterial.uniforms.uColor1.value, { r: 1.0, g: 0.9, b: 0.9, duration: 3 }, 0); // Shift to pinker
+            const tl = gsap.timeline({
+                scrollTrigger: {
+                    trigger: "body",
+                    start: "top top",
+                    end: "bottom bottom",
+                    scrub: 1.5
+                }
+            });
+
+            // Intro: Card floats in from below
+            gsap.from(card.position, { y: -5, duration: 1.5, ease: "elastic.out(1, 0.5)" });
+
+            // Scroll animation steps
+            tl.to(card.position, { x: -2, z: 1, duration: 2 }, 0)
+                .to(card.rotation, { y: 0.5, duration: 2 }, 0)
+                .to(card.position, { x: 0, y: 0, z: 2.5, duration: 2 })
+                .to(card.rotation, { y: 0, z: 0.2, duration: 2 }, "<");
+
+            // Background color shift
+            tl.to(bgMaterial.uniforms.uColor1.value, { r: 1.0, g: 0.9, b: 0.9, duration: 3 }, 0);
+        }
 
 
-        // --- ANIMATION LOOP ---
+        // ============================================
+        // ANIMATION LOOP
+        // ============================================
         const clock = new THREE.Clock();
 
         function animate() {
@@ -501,23 +577,25 @@
             // Update Shader Time
             bgMaterial.uniforms.uTime.value = time;
 
+            // Smooth Mouse Follow for Camera (Parallax) - Desktop only
+            if (!isMobile) {
+                mouse.x += (targetMouse.x - mouse.x) * 0.05;
+                mouse.y += (targetMouse.y - mouse.y) * 0.05;
 
-            // Smooth Mouse Follow for Camera (Parallax)
-            mouse.x += (targetMouse.x - mouse.x) * 0.05;
-            mouse.y += (targetMouse.y - mouse.y) * 0.05;
-
-            camera.position.x += (mouse.x * 0.5 - camera.position.x) * 0.05;
-            camera.position.y += (-mouse.y * 0.5 - camera.position.y) * 0.05;
+                camera.position.x += (mouse.x * 0.5 - camera.position.x) * 0.05;
+                camera.position.y += (-mouse.y * 0.5 - camera.position.y) * 0.05;
+            }
             camera.lookAt(0, 0, 0);
 
             // Floating Particles Animation
             particles.forEach((mesh, i) => {
+                if (!mesh.visible) return;
                 mesh.position.y += Math.sin(time + i) * 0.002;
                 mesh.rotation.x += mesh.userData.rotSpeed;
                 mesh.rotation.y += mesh.userData.rotSpeed;
             });
 
-            // Card Idle Animation (if not scrolling heavily)
+            // Card Idle Animation
             card.rotation.z = Math.sin(time * 0.5) * 0.05;
 
             renderer.render(scene, camera);
